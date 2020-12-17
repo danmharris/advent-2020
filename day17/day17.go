@@ -20,8 +20,9 @@ type Position struct {
 	w int
 }
 
-func CountAdjacent(grid *map[Position]State, pos Position) int {
-	g := *grid
+type Grid map[Position]State
+
+func (g Grid) CountAdjacent(pos Position) int {
 	var adj int
 	for zI := pos.z - 1; zI <= pos.z+1; zI++ {
 		for yI := pos.y - 1; yI <= pos.y+1; yI++ {
@@ -45,9 +46,9 @@ func CountAdjacent(grid *map[Position]State, pos Position) int {
 	return adj
 }
 
-func CountActive(grid *map[Position]State) int {
+func (g Grid) CountActive() int {
 	var total int
-	for _, s := range *grid {
+	for _, s := range g {
 		if s == Active {
 			total++
 		}
@@ -55,7 +56,7 @@ func CountActive(grid *map[Position]State) int {
 	return total
 }
 
-func PadGrid(grid *map[Position]State, withW bool) {
+func (grid *Grid) Pad(withW bool) {
 	var (
 		minX int = 1000
 		maxX int = -1000
@@ -114,12 +115,12 @@ func PadGrid(grid *map[Position]State, withW bool) {
 	}
 }
 
-func Iterate(grid map[Position]State) map[Position]State {
-	newGrid := make(map[Position]State)
-	PadGrid(&grid, true) // Change to false for part 1
+func (grid Grid) Iterate() Grid {
+	newGrid := make(Grid)
+	grid.Pad(true) // Change to false for part 1
 
 	for p, s := range grid {
-		adj := CountAdjacent(&grid, p)
+		adj := grid.CountAdjacent(p)
 		newS := s
 		switch s {
 		case Inactive:
@@ -141,7 +142,7 @@ func Iterate(grid map[Position]State) map[Position]State {
 func main() {
 	sc := bufio.NewScanner(os.Stdin)
 
-	grid := make(map[Position]State)
+	grid := make(Grid)
 	var y int
 	for sc.Scan() {
 		for x, char := range sc.Text() {
@@ -159,9 +160,9 @@ func main() {
 	}
 
 	for i := 0; i < 6; i++ {
-		grid = Iterate(grid)
+		grid = grid.Iterate()
 	}
 
-	total := CountActive(&grid)
+	total := grid.CountActive()
 	fmt.Printf("%d\n", total)
 }
